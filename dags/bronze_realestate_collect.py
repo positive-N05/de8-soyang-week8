@@ -21,7 +21,7 @@ BUCKET = os.environ.get("REALESTATE_BUCKET", "realestate-soyang")
 
 
 def collect(lawd_cd, data_interval_start):
-    print(f'collector=soyang, time={datetime.now()}, lawd={lawd_cd}')
+    print(f'collector=양수오(soyang), time={datetime.now()}, lawd={lawd_cd}')
 
     # 이번 실행이 맡은 달 (예: 202411)
     deal_ymd = data_interval_start.strftime("%Y%m")
@@ -54,7 +54,11 @@ def collect(lawd_cd, data_interval_start):
         response = requests.get(API_URL, params=params, timeout=60)
         response.raise_for_status()
         xml_text = response.text
-        root = ET.fromstring(response.content)
+        try:
+            root = ET.fromstring(response.content)
+        except ET.ParseError as e:
+            print(f"XML 파싱 실패: {e}")
+            return {"lawd_cd": lawd_cd, "deal_ymd": deal_ymd, "status": "parse_error", "count": 0}
 
     items = root.findall(".//item")
     print(f"resultCode={result_code}, totalCount={total_count}, items={len(items)}")
